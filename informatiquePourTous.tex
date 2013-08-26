@@ -1,0 +1,258 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[frenchb]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{xspace}
+
+\newcommand{\Ns}{\mathbb{N}^*}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\p}[1]{\left(#1\right)}
+\newcommand{\ens}[1]{\left\{#1\right\}}
+\newcommand{\python}{Python\xspace}
+\newcommand{\fl}[1]{{\rm fl}(#1)}
+
+\begin{document}
+	
+\section{Les nombres flottants}
+\subsection{Ensemble des nombres flottants}
+
+Un ensemble de nombres flottants $\mathcal{F}$ est une partie de $\R$
+constituée des éléments de la forme
+\[x = \pm 
+  \underbrace{
+	\p{\frac{d_1}{\beta}+\frac{d_2}{\beta^2}+\cdots+\frac{d_t}{\beta^t}}}_{m}
+  \beta^e\]
+où $d_1,\ldots,d_t\in\ens{0,\ldots,\beta-1}$ et
+$e_\text{min}\leq e\leq e_\text{max}$. Le réel $m\in[0,1[$ s'appelle la
+mantisse et l'entier $e$ s'appelle l'exposant.
+Cet ensemble est caractérisé par quatre entiers~: la base $\beta\in\Ns$, la
+précision $t\in\Ns$ et l'étendue des exposants, caractérisée par
+$e_\text{min}$ et $e_\text{max}$. Bien que les calculatrices de bureau
+utilisent encore $\beta=10$, les ordinateurs actuels utilisent tous
+$\beta=2$. Les languages de programmation proposent souvent différents types
+de flottants utilisant des précisions et des étendues d'exposant différents.
+Les deux types de flottants les plus utilisés sont les flottants à simple
+et double précision~:
+\begin{itemize}
+	\item \emph{Simple précision~:} $\beta=2$, $p=24$, $e_\text{min}=-125$ et
+	  $e_\text{max}=128$
+	\item \emph{Double précision~:} $\beta=2$, $p=53$, $e_\text{min}=-1021$ et
+	  $e_\text{max}=1024$
+\end{itemize}
+Il est possible de représenter ces flottants à l'aide de 32 bits pour les
+flottants à simple précision et 64 bits pour les flottants à double précision.
+Le language \python ne propose que le type de nombres flottants à double
+précision, qu'il appelle $\verb+float+$.\\
+
+Pour nous familiariser avec les nombres flottants, nous choisissons
+$\beta=10$, $t=1$ et $e_\text{min}=0$ et $e_\text{max}=1$.  Cet ensemble
+$\mathcal{F}$ est composé des nombres
+\[0, \pm 0.1, \pm 0.2, \ldots,
+  \pm 0.9, \pm 1, \pm 2, \ldots, \pm 9.\] 
+Voici quelques propriétés qui ne sont pas partagées par $\R$ et
+$\mathcal{F}$~:
+\begin{itemize}
+	\item \emph{$\mathcal{F}$ n'est pas uniformément peuplé}~: Entre $-1$ et $1$,
+		la distance entre deux flottants consecutifs est de $0.1$, alors qu'elle
+		est de 1 en dehors de cet interalle. De manière générale, plus on
+		s'éloigne de 0, plus l'écart entre deux flottants consécutifs est
+		grande.
+	\item \emph{$\mathcal{F}$ n'est pas stable par addition}~:
+	  $1$ et $0.1$ sont des éléments de $\mathcal{F}$ alors que
+		$1.1=1 + 0.1$ ne l'est pas.
+	\item \emph{$\mathcal{F}$ n'est pas stable par multiplication}~:
+	  $0.1$ est un élément de $\mathcal{F}$ alors que $0.01 = 0.1 \times 0.1$
+		ne l'est pas.
+\end{itemize}
+Ces propriétés font que l'ensemble des nombres flottants est un ensemble très
+délicat avec lequel travailler. De nombreux reflexes provenant de notre
+expérience des nombres réels peuvent nous enduire en erreur sur les flottants.
+
+\subsection{Erreurs d'arrondis}
+
+Si $x\in\R$, on note $\fl{x}$ le nombre flottant le plus proche de $x$.
+Dans le cas où $x$ est à la même distance de deux nombres flottants consecutifs,
+on choisit pour $\fl{x}$ celui qui est le plus proche de 0.\\
+
+On dit qu'un nombre réel $x$ est dans le domaine de $\mathcal{F}$ lorsque
+$x=0$ ou $\beta^{e_\text{min}} \leq |x| \leq \beta^{e_\text{max}}(1-\beta^{-(t+1)})$
+(ce qui donne en double précision, $x=0$ ou $4.5 \times 10^{-308} \leq \abs{x} \leq
+1.7 \times 10^{308}$). Dans la
+suite, nous supposerons que tous les nombres avec lesquels on travaille
+restent dans ce domaine. Pour de tels nombres, on démontre que
+\[\abs{x-\fl{x}}\leq u \abs{x}\]
+où $u=\beta^{1-t}/2$ est appelé arrondi de l'unité
+($u\approx 1.1 \times 10^{-16}$ en double précision).
+Autrement dit, si $x\neq 0$, l'erreur \emph{relative} faite en approchant $x$ par
+$\fl{x}$ est inférieure à $u$.\\
+
+Étant donné que $\mathcal{F}$ n'est pas stable par les opérations élémentaires,
+les opérations $+\!\!.$, $-\!.$, $\times\!.$ et $/\!.$ définies sur les
+flottants sont calculées en effectuant l'opération dans $\R$ avant d'arrondir
+au nombre flottant le plus proche. Autrement dit~:
+\begin{itemize}
+	\item $\forall x,y\in\mathcal{F} \quad x +\!\!.\ y = \fl{x+y}$
+	\item $\forall x,y\in\mathcal{F} \quad x -\!.\ y = \fl{x-y}$
+	\item $\forall x,y\in\mathcal{F} \quad x \times\!.\ y = \fl{x\times y}$
+	\item $\forall x\in\mathcal{F} \quad \forall y\in\mathcal{F}^* \quad
+	  x /\!.\ y = \fl{x/y}$
+\end{itemize}
+En particulier, si $x$ et $y$ sont deux nombres flottants, l'erreur relative
+faite lorsqu'on approche $x+y$ par $x + \!\!.\ y$ reste inférieure à $u$.
+En ce qui concerne les fonctions transcendantes, comme $\exp$, $\ln$,
+$\sin$, $\cos$, on pourrait espérer que~:
+\[\forall x\in\mathcal{F} \quad \exp\!.(x)=\fl{e^x}.\]
+Malheureusement, ce n'est pas toujours le cas, et les implémentations de ces
+fonctions dans les processeurs actuels ne garantissent pas de telles
+relations. Aucune norme n'existe et l'expérience montre que les erreurs
+relatives introduites lors de ces calculs sont de quelques $u$.\\
+
+Contrairement à ce qui se passe lorsqu'on effectue une seule opération,
+dès que l'on enchaine deux opérations, l'erreur relative peut devenir énorme.
+Par exemple
+\[\underbrace{(1+u)+(-1)}_{\alpha} = u \quad\text{et}\quad
+  \underbrace{(1 +\!\!.\ u) +\!\!.\ (-1)}_{\beta} = 0\]
+et puisque $\abs{\alpha-\beta}/\abs{\alpha} = 1$, on obtient une erreur relative
+de 1 lorsqu'on remplace le calcul exact par cet enchainement de deux opérations
+flottantes. L'addition sur les nombres flottants est donc bien différente de
+celle sur les nombres réels. En particulier, elle n'est pas associative puisque
+\[(1 +\!\!.\ u) +\!\!.\ (-1) = 0 \quad\text{et}\quad
+  1 +\!\!.\ (u +\!\!.\ (-1)) = u\]
+Voici quelques exemples de conséquences facheuses de ces propriétés pour des
+calculs sur les flottants (exemples en double précision)~:
+\begin{itemize}
+  \item \emph{Des sommes qui dépendent de l'ordre de sommation}~: Lorsque l'on
+	  souhaite calculer
+		\[\sum_{k=1}^{10^5} \frac{1}{k^2}\]
+		on peut choisir de sommer les termes pour $k$ allant de $1$ à $10^5$ ou
+		pour $k$ allant de $10^5$ à 1. En utilisant ces deux méthodes distinctes, 
+		on obtient respectivement $1.6449240668982423$ et $1.6449240668982263$
+		alors que le nombre flottant le plus proche du résultat exact est
+		$1.6449240668982263$. Sommer du plus grand terme au plus petit terme
+		aboutit à une erreur relative de l'ordre de $9.7\times 10^{-15}$ sur
+		la somme alors que sommer du plus petit terme au plus grand terme
+		aboutit à une erreur relative inférieure à $u\approx 1.1 \times 10^{-16}$.
+		Cette méthode à l'avantage de ne jamais sommer des nombres d'ordre de
+		grandeur différents, contrairement à ce qui se passe lorsqu'on somme
+		du plus grand terme au plus petit terme. On retiendra qu'il est préférable
+		de sommer les sommes de termes positifs du plus petit terme au plus grand
+		terme.
+	\item \emph{Des compensation catastrophique}~: Comme vu plus haut, on perd
+  	beaucoup en précision lorsque deux nombres très proches sont soustraits.
+		Si l'on souhaite calculer
+		\[{\rm expr}_1=\frac{1-\cos x}{x^2}\]
+		pour de petites valeurs de $x$, il est bon de transformer cette expression
+		en
+		\[{\rm expr}_2=\frac{1}{2}\p{\frac{\sin\frac{x}{2}}{\frac{x}{2}}}^2\]
+		En effet, voici les erreurs relatives faites par rapport au résultat exact
+		en calculant l'expression en virgule flottante.\\
+		\begin{center}
+		\begin{tabular}{|c|c|c|}
+			\hline
+			$x$ & ${\rm expr}_1$ & ${\rm expr}_2$\\
+			\hline
+			$10^{-1}$ & $1.1\times 10^{-14}$ & $1.1\times 10^{-16}$ \\
+			\hline
+			$10^{-3}$ & $1.6\times 10^{-11}$ & $1.1\times 10^{-16}$ \\
+			\hline
+			$10^{-6}$ & $8.9\times 10^{-5}$ & $1.1\times 10^{-16}$ \\
+			\hline
+			$10^{-9}$ & $1.0$ & $1.1\times 10^{-16}$ \\
+			\hline
+		\end{tabular}
+		\end{center}
+		On voit bien que la seconde expression garde une erreur relative inférieure
+		à $u$ quel que soit la valeur de $x$. Cependant, pour $x=10^{-6}$, la
+		première expression donne une valeur de $0.5000444502911705$ alors que
+		le résultat exact arrondi au plus proche nombre flottant est
+		$0.4999999999999583$. Pour $x=10^{-9}$, la première expression donne une
+		valeur de $0.0$ alors que le résultat exact arrondi au plus proche nombre
+		flottant est $0.5$.
+\end{itemize}
+
+La construction de bibliothèques numériques qui minimisent ces effets est
+donc un domaine très délicat, et il vaudra mieux utiliser des bibliothèques
+qui sont testées depuis de nombreuses années que d'essayer de les réinventer.
+Toutefois, bien qu'ils soient minimisés, ces problèmes sont inhérents aux
+calculs sur les nombres flottants et seront toujours présents.
+
+\subsection{Quelques exemples pratiques}
+
+\subsubsection{Calcul d'une variance}
+Soit $x_1,\ldots,x_n\in\R$. On appelle respectivement moyenne et variance
+de cette famille les réels
+\[m = \frac{1}{n}\sum_{k=1}^n x_k \quad\text{et}\quad
+  v = \frac{1}{n}\sum_{k=1}^n (x_k - m)^2\]
+Un programme calculant la variance d'une famille de nombre doit donc la
+parcourir 2 fois~: une première fois pour calculer la moyenne et une seconde
+fois pour calculer la variance. On pourrait donc être tenté d'utiliser la
+formule suivante
+\[v = \frac{1}{n}\sum_{k=1}^n x_k^2 - \p{\frac{1}{n} \sum_{k=1}^n x_k}^2\]
+qui a l'avantage d'être calculable en ne parcourant qu'une seule fois la
+famille de réels.\\
+
+Cependant, si
+\[x_1 = 1 - 10^{-8}, \quad x_2 = 1 \quad\text{et}\quad x_3 = 1 + 10^{-8}\]
+en double précision, la variance calculée cette seconde formule en une passe
+est 0 alors que la
+variance calculée par la première formule est $6.66666666705 \times 10^{-15}$.
+Bien entendu, le nombre flottant le plus proche du résultat exact est
+$6.6666666666666664 \times 10^{-15}$. Une observation de la formule en une passe
+montre qu'une compensation catastrophique à lieu lorsqu'on fait la différence
+des deux termes, phénomène qui explique la mauvaise qualité du résultat donné
+par cette formule.
+
+\subsubsection{Calcul numérique d'une dérivée}
+
+Soit $f:\R\to\R$ une fonction de classe $\mathcal{C}^{\infty}$ telle que
+et $f\!.:\mathcal{F}\to\mathcal{F}$ son implémentation en calcul flottant.
+On suppose que
+\[\forall x\in\mathcal{F} \quad f\!.(x) = \fl{f(x)}\]
+En particulier, $\abs{f\!.(x)-f(x)}\leq u\abs{f(x)}$. Pour évaluer numériquement
+la dérivée de $f$ en $x$, on va calculer en virgule flottante l'expression
+\[\frac{f\!.(x+h)-f\!.(x)}{x}\]
+pour un $h$ assez petit. Malheureusement, plus $h$ est petit, plus
+$f\!.(x+h)$ et $f\!.(x)$ vont être proche, ce qui va induire une compensation
+catastrophique. Il va donc falloir choisir $h$ petit, mais pas trop pour
+limiter ce phénomène. Cherchons donc une valeur de $h$ optimale.\\
+
+On suppose que
+\[\forall x\in\R \quad \abs{f(x)}\leq M_0 \quad\text{et}\quad
+  \abs{f''(x)}\leq M_2\]
+Soit $h>0$. D'après la formule de Taylor-Lagrange, il existe $a\in ]0,h[$ tel
+que $f(x+h)=f(x)+hf'(x)+(h^2/2)f''(x+a)$. On en déduit que
+\[\abs{\frac{f(x+h)-f(x)}{h}-f'(x)}\leq \frac{h}{2}M_2\]
+Puisque $\abs{f\!.(x+h)-f\!(x)}\leq u\abs{f(x)}\leq u M_0$, on en déduit que
+\[\abs{\frac{f\!.(x+h)-f\!.(x)}{h}-f'(x)}\leq
+  \frac{h}{2}M_2+\frac{2u}{h} M_0\]
+Une rapide étude de fonction montre que ce majorant est minimal pour
+$h=2\sqrt{M_0/M_2} \sqrt{u}$. Comme l'ordre de grandeur de $M_0/M_2$ est
+souvent de 1, on en déduit que $h=\sqrt{u}$
+($h\approx 10^{-8}$ en double précision) est un bon choix pour une telle formule.\\
+
+En double précision, pour $f(x)=\sqrt{x}$ voici l'erreur relative entre
+l'évaluation numérique de la dérivée de $f$ en 1 et sa valeur exacte
+$f'(1)=1/2$ selon différentes valeurs de $h$~:
+\begin{center}
+	\begin{tabular}{|c|c|}
+		\hline
+		$h$ & $f'(x)$\\
+		\hline
+		$10^{-3}$ & $2.5 \times 10^{-4}$\\
+		\hline
+		$10^{-6}$ & $2.5 \times 10^{-7}$\\
+		\hline
+		$10^{-8}$ & $6.1 \times 10^{-9}$\\
+		\hline
+		$10^{-10}$ & $8.3 \times 10^{-8}$\\
+		\hline
+		$10^{-13}$ & $8.0 \times 10^{-4}$\\
+		\hline
+	\end{tabular}
+\end{center}
+Ces erreurs confirment bien une valeur optimale pour $h\approx 10^{-8}$.
+
+\end{document}
